@@ -16,5 +16,5 @@ This project is the delivery for Task 1 for Lime Academy Web 3 development cours
 - [X] Deployment unit tests
 - [X] Borrow unit tests
 - [X] Return unit tests
-- [X] History tests
+- [Xnpm install hardhat-gas-reporter --save-dev] History tests
 - [ ] Smart Contract optimization
