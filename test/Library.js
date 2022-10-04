@@ -56,6 +56,16 @@ describe("Library", function () {
       expect(result).equal(50);
     })
 
+    it("Owner borrow a book", async function(){
+      const {library} = await loadFixture(deployLibrary);
+      const _qty = 50;
+      const txResponse = await library.addBook("testing",_qty);
+      const txReceipt = await txResponse.wait();
+      const [transferEvent] = txReceipt.events;
+      const [ id ] = transferEvent.args;
+      await expect(library.borrow(id));
+    })
+
   });
 
 });
