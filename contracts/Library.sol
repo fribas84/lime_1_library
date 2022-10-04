@@ -55,7 +55,7 @@ contract Library is Ownable {
     }
 
     function returnBook() public payable {
-        require(hasBorrow[msg.sender]>0,"This address did not rent a book");
+        require(hasBorrow[msg.sender]>0,"This address did not rent a book.");
         uint id = hasBorrow[msg.sender];
         stock[id] = stock[id] + 1;
         hasBorrow[msg.sender] = 0;
@@ -71,7 +71,11 @@ contract Library is Ownable {
     }
 
     function getBookHistory(uint _id) public view returns(address [] memory) {
+        
         return bookHistory[_id];
+    }
+    function hasBorrowed() public view returns (uint) {
+        return hasBorrow[msg.sender];
     }
 
 }
