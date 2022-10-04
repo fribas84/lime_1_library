@@ -15,6 +15,6 @@ This project is the delivery for Task 1 for Lime Academy Web 3 development cours
 - [X] Basic smart contract that fullfills requirements.
 - [X] Deployment unit tests
 - [X] Borrow unit tests
-- [ ] Return unit tests
-- [ ] History tests
+- [X] Return unit tests
+- [X] History tests
 - [ ] Smart Contract optimization

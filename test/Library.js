@@ -12,10 +12,10 @@ describe("Library Contract basic funcionality", function () {
   async function deployLibrary() {
     
     // Contracts are deployed using the first signer/account by default
-    const [owner, otherAccount1, otherAccount2 ] = await ethers.getSigners();
+    const [owner, otherAccount1, otherAccount2, otherAccount3 ] = await ethers.getSigners();
     const Library = await hre.ethers.getContractFactory("Library");
     const library = await Library.deploy();
-    return { library, owner, otherAccount1, otherAccount2 };
+    return { library, owner, otherAccount1, otherAccount2,otherAccount3};
   }
 
   describe("Deployment", function () {
@@ -98,13 +98,54 @@ describe("Library Contract basic funcionality", function () {
       const txReceipt2 = await txResponse2.wait();
       const [transferEvent2] = txReceipt2.events;
       const [ id2] = transferEvent2.args;
+
       await library.connect(otherAccount1).borrow(1);
       await expect(library.connect(otherAccount1).borrow(2)).to.revertedWith('This Address has already rent a book.');
     })
   })
-  
-  describe("Return borrowed books", function (){ 
 
+  describe("Return borrowed books", async function (){ 
+    it("Return a book", async function() {
+
+      const {library,otherAccount1 } = await loadFixture(deployLibrary);
+      const _qty = 50;
+      const txResponse = await library.addBook("testing",_qty);
+      const txReceipt = await txResponse.wait();
+      const [transferEvent] = txReceipt.events;
+      const [ id ] = transferEvent.args;
+      await library.connect(otherAccount1).borrow(id);
+      await library.connect(otherAccount1).returnBook();
+      expect(await library.connect(otherAccount1).hasBorrowed()).equal(0);
+
+    })
+    it("Cannot return if user didn't rent any", async function() {
+
+      const {library,otherAccount1 } = await loadFixture(deployLibrary);
+      const _qty = 50;
+      const txResponse = await library.addBook("testing",_qty);
+      const txReceipt = await txResponse.wait();
+      const [transferEvent] = txReceipt.events;
+      const [ id ] = transferEvent.args;
+      await expect(library.connect(otherAccount1).returnBook()).to.revertedWith('This address did not rent a book.');
+    })
   })
-
+  describe("Check history", async function (){
+    it("Validate if history is accurate", async function(){
+      const {library,otherAccount1 ,otherAccount2,otherAccount3} = await loadFixture(deployLibrary);
+      const _qty = 50;
+      const txResponse = await library.addBook("testing",_qty);
+      const txReceipt = await txResponse.wait();
+      const [transferEvent] = txReceipt.events;
+      const [ id ] = transferEvent.args;
+  
+      await library.connect(otherAccount1).borrow(id);
+      await library.connect(otherAccount2).borrow(id);
+      await library.connect(otherAccount3).borrow(id);
+  
+      const borrowers = [otherAccount1.address,otherAccount2.address,otherAccount3.address]
+      const history = await library.getBookHistory(id);
+      expect(history).to.eql(borrowers);
+  
+    })
+  })
 });
