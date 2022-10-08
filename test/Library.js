@@ -54,7 +54,15 @@ describe("Library Contract basic funcionality", function () {
       const [ id ] = transferEvent.args;
       const result = await library.getStock(id);
       expect(result).equal(50);
-    }) 
+    })
+    
+    it("Revert when owner wants to add a book with no stock.", async function () {
+      const {library} = await loadFixture(deployLibrary);
+      const _qty = 0;
+      await expect(library.addBook("testing",_qty))
+      .to.revertedWith("Quantity must at least 1 unit.");
+    });
+ 
   });
 
   describe("Borrow books", function (){

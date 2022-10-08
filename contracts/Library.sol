@@ -13,15 +13,15 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Library is Ownable {
-    mapping(string=>uint) bookIndex;
-    mapping(uint=>uint) stock;
-    mapping(address=>uint) hasBorrow;
-    mapping(uint=>address[]) bookHistory;
+    mapping(string=>uint16) bookIndex;
+    mapping(uint16=>uint8) stock;
+    mapping(address=>uint16) hasBorrow;
+    mapping(uint16=>address[]) bookHistory;
 
-    uint nextId = 1;
+    uint16 nextId = 1;
 
-    event NewBook(uint _id, string _book, uint _qty);
-    event BookBorrowed(uint _id, address _address);
+    event NewBook(uint16 _id, string _book, uint8 _qty);
+    event BookBorrowed(uint16 _id, address _address);
     event BookReturned(uint _id, address _address);
 
     constructor() payable {
@@ -32,8 +32,9 @@ contract Library is Ownable {
         _;
     }
 
-    function addBook(string memory _book,uint _qty) public onlyOwner returns(uint) {
-        uint id = nextId;
+    function addBook(string memory _book,uint8 _qty) public onlyOwner returns(uint) {
+        require(_qty>0,"Quantity must at least 1 unit.");
+        uint16 id = nextId;
         if(bookIndex[_book]==0){
             bookIndex[_book] = id;
             nextId++;
@@ -46,7 +47,7 @@ contract Library is Ownable {
         return id;
     }
 
-    function borrow(uint _id) public payable noRent {
+    function borrow(uint16 _id) public payable noRent {
         require(stock[_id]>0,"Book not available.");
         stock[_id] = stock[_id] - 1;
         hasBorrow[msg.sender] = _id;
@@ -56,21 +57,21 @@ contract Library is Ownable {
 
     function returnBook() public payable {
         require(hasBorrow[msg.sender]>0,"This address did not rent a book.");
-        uint id = hasBorrow[msg.sender];
+        uint16 id = hasBorrow[msg.sender];
         stock[id] = stock[id] + 1;
         hasBorrow[msg.sender] = 0;
         emit BookReturned(id,msg.sender);
     }
 
-    function getID(string memory _book) public view returns(uint){
+    function getID(string memory _book) public view returns(uint16){
         return bookIndex[_book];
     }
 
-    function getStock(uint _id) public view returns(uint){
+    function getStock(uint16 _id) public view returns(uint){
           return stock[_id];
     }
 
-    function getBookHistory(uint _id) public view returns(address [] memory) {
+    function getBookHistory(uint16 _id) public view returns(address [] memory) {
         
         return bookHistory[_id];
     }
