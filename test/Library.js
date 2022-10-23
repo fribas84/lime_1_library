@@ -209,9 +209,6 @@ describe("Library Contract basic funcionality", function () {
         value: ethers.utils.parseEther("1")
       });
       await expect(tx).to.emit(library, 'NewDepositReceive');
-
     })
-
-
   })
 });
