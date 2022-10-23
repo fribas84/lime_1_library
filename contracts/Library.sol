@@ -23,6 +23,7 @@ contract Library is Ownable {
     event NewBook(uint16 _id, string _book, uint8 _qty);
     event BookBorrowed(uint16 _id, address _address);
     event BookReturned(uint _id, address _address);
+    event NewDepositFallback(address _address);
 
     constructor() payable {
    }
@@ -32,7 +33,7 @@ contract Library is Ownable {
         _;
     }
 
-    function addBook(string memory _book,uint8 _qty) public onlyOwner returns(uint) {
+    function addBook(string memory _book,uint8 _qty) external onlyOwner returns(uint) {
         require(_qty>0,"Quantity must at least 1 unit.");
         uint16 id = nextId;
         if(bookIndex[_book]==0){
@@ -47,7 +48,7 @@ contract Library is Ownable {
         return id;
     }
 
-    function borrow(uint16 _id) public payable noRent {
+    function borrow(uint16 _id) external payable noRent {
         require(stock[_id]>0,"Book not available.");
         stock[_id] = stock[_id] - 1;
         hasBorrow[msg.sender] = _id;
@@ -55,7 +56,7 @@ contract Library is Ownable {
         emit BookBorrowed(_id,msg.sender);
     }
 
-    function returnBook() public payable {
+    function returnBook() external payable {
         require(hasBorrow[msg.sender]>0,"This address did not rent a book.");
         uint16 id = hasBorrow[msg.sender];
         stock[id] = stock[id] + 1;
@@ -63,20 +64,31 @@ contract Library is Ownable {
         emit BookReturned(id,msg.sender);
     }
 
-    function getID(string memory _book) public view returns(uint16){
+    function getID(string memory _book) external view returns(uint16){
         return bookIndex[_book];
     }
 
-    function getStock(uint16 _id) public view returns(uint){
+    function getStock(uint16 _id) external view returns(uint){
           return stock[_id];
     }
 
-    function getBookHistory(uint16 _id) public view returns(address [] memory) {
+    function getBookHistory(uint16 _id) external view returns(address [] memory) {
         
         return bookHistory[_id];
     }
     function hasBorrowed() public view returns (uint) {
         return hasBorrow[msg.sender];
     }
+
+    function getContractBalance() external view returns(uint) {
+        return address(this).balance;
+    }
+    fallback() external payable{
+        emit NewDepositFallback(msg.sender);
+    }
+
+    receive() external payable {
+        emit NewDepositFallback(msg.sender);
+    }   
 
 }

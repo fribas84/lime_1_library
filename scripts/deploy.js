@@ -8,7 +8,7 @@ const hre = require("hardhat");
 
 async function main() {
   
-  const Library = await hre.ethers.getContractFactory("Library");
+  const Library = await hre.ethers.getContractFactory("Library.sol");
   const library = await Library.deploy();
 
   await lock.deployed();

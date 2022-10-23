@@ -18,15 +18,15 @@ describe("Library Contract basic funcionality", function () {
     return { library, owner, otherAccount1, otherAccount2,otherAccount3};
   }
 
-  describe("Deployment", function () {
-    it("Owner should be first account", async function () {
+  describe("Deployment",  () => {
+    it("Owner should be first account", async () => {
       const { library, owner } = await loadFixture(deployLibrary);
 
       expect(await library.owner()).to.equal(owner.address);
     });
   });
 
-  describe("Add books to stock", function () {
+  describe("Add books to stock",  () => {
     it("Owner should be able to add one book with stock, and the returned ID should be 1", async function () {
       const {library} = await loadFixture(deployLibrary);
       const _qty = 50;
@@ -38,14 +38,14 @@ describe("Library Contract basic funcionality", function () {
       expect(id).to.equal(1);
     });
 
-    it("Not-owner cannot add books to stock", async function () {
+    it("Not-owner cannot add books to stock", async  () => {
       const { library,otherAccount1 } = await loadFixture(deployLibrary);
        await expect( 
         library.connect(otherAccount1).addBook("testing",50))
         .to.revertedWith("Ownable: caller is not the owner");
     });
     
-    it("Book 1 stock should be 50 units", async function() {
+    it("Book 1 stock should be 50 units", async () => {
       const {library} = await loadFixture(deployLibrary);
       const _qty = 50;
       const txResponse = await library.addBook("testing",_qty);
@@ -56,7 +56,7 @@ describe("Library Contract basic funcionality", function () {
       expect(result).equal(50);
     })
     
-    it("Revert when owner wants to add a book with no stock.", async function () {
+    it("Revert when owner wants to add a book with no stock.", async  () => {
       const {library} = await loadFixture(deployLibrary);
       const _qty = 0;
       await expect(library.addBook("testing",_qty))
@@ -65,8 +65,8 @@ describe("Library Contract basic funcionality", function () {
  
   });
 
-  describe("Borrow books", function (){
-    it("Owner borrow a book", async function(){
+  describe("Borrow books",  ()=>{
+    it("Owner borrow a book", async () => {
       const {library} = await loadFixture(deployLibrary);
       const _qty = 50;
       const txResponse = await library.addBook("testing",_qty);
@@ -76,7 +76,7 @@ describe("Library Contract basic funcionality", function () {
       await expect(library.borrow(id));
     })
 
-    it("Cannot borrow a book that doesnt exists", async function(){
+    it("Cannot borrow a book that doesnt exists", async () => {
       const {library} = await loadFixture(deployLibrary);
       const _qty = 50;
       const txResponse = await library.addBook("testing",_qty);
@@ -86,7 +86,7 @@ describe("Library Contract basic funcionality", function () {
       await expect(library.borrow(5));
     })
 
-    it("Not Owner borrow a book", async function(){
+    it("Not Owner borrow a book", async () => {
       const {library,otherAccount1 } = await loadFixture(deployLibrary);
       const _qty = 50;
       const txResponse = await library.addBook("testing",_qty);
@@ -96,7 +96,7 @@ describe("Library Contract basic funcionality", function () {
       await expect(library.connect(otherAccount1).borrow(id));
     })
 
-    it("Not Owner cannot borrow a book when it has already borrowed one", async function(){
+    it("Not Owner cannot borrow a book when it has already borrowed one", async () => {
       const {library,otherAccount1 } = await loadFixture(deployLibrary);
       const txResponse = await library.addBook("testing",50);
       const txReceipt = await txResponse.wait();
@@ -112,7 +112,7 @@ describe("Library Contract basic funcionality", function () {
     })
   })
 
-  describe("Return borrowed books", async function (){ 
+  describe("Return borrowed books", async  ()=>{ 
     it("Return a book", async function() {
 
       const {library,otherAccount1 } = await loadFixture(deployLibrary);
@@ -126,7 +126,7 @@ describe("Library Contract basic funcionality", function () {
       expect(await library.connect(otherAccount1).hasBorrowed()).equal(0);
 
     })
-    it("Cannot return if user didn't rent any", async function() {
+    it("Cannot return if user didn't rent any", async () => {
 
       const {library,otherAccount1 } = await loadFixture(deployLibrary);
       const _qty = 50;
@@ -138,7 +138,7 @@ describe("Library Contract basic funcionality", function () {
     })
   })
   describe("Check history", async function (){
-    it("Validate if history is accurate", async function(){
+    it("Validate if history is accurate", async () => {
       const {library,otherAccount1 ,otherAccount2,otherAccount3} = await loadFixture(deployLibrary);
       const _qty = 50;
       const txResponse = await library.addBook("testing",_qty);
@@ -155,5 +155,23 @@ describe("Library Contract basic funcionality", function () {
       expect(history).to.eql(borrowers);
   
     })
+  })
+  describe("Test Fallback and Receive", async function(){
+    it("Validate Fallback", async () =>{
+      const {library,otherAccount1} = await loadFixture(deployLibrary);
+      const nonExistentFuncSignature ='nonExistentFunction(uint256,uint256)';
+      const libraryContract = new ethers.Contract(
+        library.address,
+        [
+          ...library.interface.fragments,
+          `function ${nonExistentFuncSignature}`,
+        ],
+        otherAccount1,
+      );
+      const tx = libraryContract[nonExistentFuncSignature](8, 9);
+      await expect(tx).to.emit(library, 'NewDepositFallback');
+
+    })
+
   })
 });
