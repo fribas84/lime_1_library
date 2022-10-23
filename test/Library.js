@@ -55,6 +55,36 @@ describe("Library Contract basic funcionality", function () {
       const result = await library.getStock(id);
       expect(result).equal(50);
     })
+
+    it("Add stock to extisting book, result should be 15 units", async () => {
+      const {library} = await loadFixture(deployLibrary);
+      const _qty = 5;
+      const txResponse = await library.addBook("testing",_qty);
+      const txReceipt = await txResponse.wait();
+      const [transferEvent] = txReceipt.events;
+      const [ id ] = transferEvent.args;
+
+      const txResponse2 = await library.addBook("testing",10);
+      const txReceipt2 = await txResponse2.wait();
+      const [transferEvent2] = txReceipt.events;
+      const [ id2 ] = transferEvent.args;
+
+      const result = await library.getStock(id2);
+      expect(result).equal(15);
+
+    })
+
+    it("getID should return the same ID as addBook", async ()=>{
+      const {library} = await loadFixture(deployLibrary);
+      const _qty = 5;
+      const txResponse = await library.addBook("testing",_qty);
+      const txReceipt = await txResponse.wait();
+      const [transferEvent] = txReceipt.events;
+      const [ id ] = transferEvent.args;
+      const retunedId = await library.getID("testing");
+      expect(id).equal(retunedId);
+
+    })
     
     it("Revert when owner wants to add a book with no stock.", async  () => {
       const {library} = await loadFixture(deployLibrary);
@@ -156,7 +186,7 @@ describe("Library Contract basic funcionality", function () {
   
     })
   })
-  describe("Test Fallback and Receive", async function(){
+  describe("Test Fallback and Receive", async () => {
     it("Validate Fallback", async () =>{
       const {library,otherAccount1} = await loadFixture(deployLibrary);
       const nonExistentFuncSignature ='nonExistentFunction(uint256,uint256)';
@@ -172,6 +202,16 @@ describe("Library Contract basic funcionality", function () {
       await expect(tx).to.emit(library, 'NewDepositFallback');
 
     })
+    it("Validate Receive", async () =>{
+      const {library,otherAccount1} = await loadFixture(deployLibrary);
+      const tx = otherAccount1.sendTransaction({
+        to: library.address,
+        value: ethers.utils.parseEther("1")
+      });
+      await expect(tx).to.emit(library, 'NewDepositReceive');
+
+    })
+
 
   })
 });

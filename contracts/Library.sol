@@ -24,6 +24,8 @@ contract Library is Ownable {
     event BookBorrowed(uint16 _id, address _address);
     event BookReturned(uint _id, address _address);
     event NewDepositFallback(address _address);
+    event NewDepositReceive(address _address);
+
 
     constructor() payable {
    }
@@ -80,15 +82,12 @@ contract Library is Ownable {
         return hasBorrow[msg.sender];
     }
 
-    function getContractBalance() external view returns(uint) {
-        return address(this).balance;
-    }
     fallback() external payable{
         emit NewDepositFallback(msg.sender);
     }
 
     receive() external payable {
-        emit NewDepositFallback(msg.sender);
+        emit NewDepositReceive(msg.sender);
     }   
 
 }
