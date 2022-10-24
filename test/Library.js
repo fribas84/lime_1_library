@@ -103,7 +103,31 @@ describe("Library Contract basic funcionality", function () {
       const txReceipt = await txResponse.wait();
       const [transferEvent] = txReceipt.events;
       const [ id ] = transferEvent.args;
-      await expect(library.borrow(id));
+      const options = {value: ethers.utils.parseEther("0.001")}
+      await expect(library.borrow(id,options));
+    })
+
+    it("Cannot borrow a book with insufficient transfer value", async () => {
+      const {library} = await loadFixture(deployLibrary);
+      const _qty = 50;
+      const txResponse = await library.addBook("testing",_qty);
+      const txReceipt = await txResponse.wait();
+      const [transferEvent] = txReceipt.events;
+      const [ id ] = transferEvent.args;
+      const options = {value: ethers.utils.parseEther("0.0001")}
+      await expect(library.borrow(id,options)).to.revertedWith('Wrong transfer value, it should be 1 Finney.');
+    })
+
+    it("Cannot borrow a book with transfer value above fee", async () => {
+      const {library} = await loadFixture(deployLibrary);
+      const _qty = 50;
+      const txResponse = await library.addBook("testing",_qty);
+      const txReceipt = await txResponse.wait();
+      const [transferEvent] = txReceipt.events;
+      const [ id ] = transferEvent.args;
+      const options = {value: ethers.utils.parseEther("0.1")}
+      await expect(library.borrow(id,options)).to.revertedWith('Wrong transfer value, it should be 1 Finney.');
+
     })
 
     it("Cannot borrow a book that doesnt exists", async () => {
@@ -113,7 +137,8 @@ describe("Library Contract basic funcionality", function () {
       const txReceipt = await txResponse.wait();
       const [transferEvent] = txReceipt.events;
       const [ id ] = transferEvent.args;
-      await expect(library.borrow(5));
+      const options = {value: ethers.utils.parseEther("0.001")};
+      await expect(library.borrow(5,options));
     })
 
     it("Not Owner borrow a book", async () => {
@@ -123,7 +148,8 @@ describe("Library Contract basic funcionality", function () {
       const txReceipt = await txResponse.wait();
       const [transferEvent] = txReceipt.events;
       const [ id ] = transferEvent.args;
-      await expect(library.connect(otherAccount1).borrow(id));
+      const options = {value: ethers.utils.parseEther("0.001")};
+      await expect(library.connect(otherAccount1).borrow(id,options));
     })
 
     it("Not Owner cannot borrow a book when it has already borrowed one", async () => {
@@ -136,9 +162,9 @@ describe("Library Contract basic funcionality", function () {
       const txReceipt2 = await txResponse2.wait();
       const [transferEvent2] = txReceipt2.events;
       const [ id2] = transferEvent2.args;
-
-      await library.connect(otherAccount1).borrow(1);
-      await expect(library.connect(otherAccount1).borrow(2)).to.revertedWith('This Address has already rent a book.');
+      const options = {value: ethers.utils.parseEther("0.001")};
+      await library.connect(otherAccount1).borrow(1,options);
+      await expect(library.connect(otherAccount1).borrow(2,options)).to.revertedWith('This Address has already rent a book.');
     })
   })
 
@@ -151,7 +177,9 @@ describe("Library Contract basic funcionality", function () {
       const txReceipt = await txResponse.wait();
       const [transferEvent] = txReceipt.events;
       const [ id ] = transferEvent.args;
-      await library.connect(otherAccount1).borrow(id);
+      const options = {value: ethers.utils.parseEther("0.001")};
+
+      await library.connect(otherAccount1).borrow(id,options);
       await library.connect(otherAccount1).returnBook();
       expect(await library.connect(otherAccount1).hasBorrowed()).equal(0);
 
@@ -167,7 +195,7 @@ describe("Library Contract basic funcionality", function () {
       await expect(library.connect(otherAccount1).returnBook()).to.revertedWith('This address did not rent a book.');
     })
   })
-  describe("Check history", async function (){
+  describe("Check history", async  () => {
     it("Validate if history is accurate", async () => {
       const {library,otherAccount1 ,otherAccount2,otherAccount3} = await loadFixture(deployLibrary);
       const _qty = 50;
@@ -175,11 +203,10 @@ describe("Library Contract basic funcionality", function () {
       const txReceipt = await txResponse.wait();
       const [transferEvent] = txReceipt.events;
       const [ id ] = transferEvent.args;
-  
-      await library.connect(otherAccount1).borrow(id);
-      await library.connect(otherAccount2).borrow(id);
-      await library.connect(otherAccount3).borrow(id);
-  
+      const options = {value: ethers.utils.parseEther("0.001")};
+      await library.connect(otherAccount1).borrow(id,options);
+      await library.connect(otherAccount2).borrow(id,options);
+      await library.connect(otherAccount3).borrow(id,options);
       const borrowers = [otherAccount1.address,otherAccount2.address,otherAccount3.address]
       const history = await library.getBookHistory(id);
       expect(history).to.eql(borrowers);
@@ -209,6 +236,15 @@ describe("Library Contract basic funcionality", function () {
         value: ethers.utils.parseEther("1")
       });
       await expect(tx).to.emit(library, 'NewDepositReceive');
+    })
+  })
+  describe("Get borrow fee", async () => {
+    it("Borrow fee should be 1 Finney", async ()=>{
+      const {library} = await loadFixture(deployLibrary);
+      const feeValue = await library.getFee();
+      console.log(feeValue);
+      expect(ethers.utils.formatEther(feeValue)).equal("0.001");
+
     })
   })
 });
