@@ -18,6 +18,7 @@ contract Library is Ownable {
     mapping(address=>uint16) hasBorrow;
     mapping(uint16=>address[]) bookHistory;
 
+    uint fee = 1000000 gwei; 
     uint16 nextId = 1;
 
     event NewBook(uint16 _id, string _book, uint8 _qty);
@@ -52,6 +53,7 @@ contract Library is Ownable {
 
     function borrow(uint16 _id) external payable noRent {
         require(stock[_id]>0,"Book not available.");
+        require(msg.value == fee,"Wrong transfer value, it should be 1 Finney.");
         stock[_id] = stock[_id] - 1;
         hasBorrow[msg.sender] = _id;
         bookHistory[_id].push(msg.sender);
@@ -80,6 +82,10 @@ contract Library is Ownable {
     }
     function hasBorrowed() public view returns (uint) {
         return hasBorrow[msg.sender];
+    }
+
+    function getFee() external view returns(uint) {
+        return fee;
     }
 
     fallback() external payable{
