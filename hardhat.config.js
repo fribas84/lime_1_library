@@ -41,3 +41,11 @@ task("deploy-testnets", "Deploys contract on a provided network")
         const deployLibraryontract = require("./scripts/deploy");
         await deployLibraryontract(taskArguments);
     });
+
+task("interact", "Execute interact script")
+  .setAction(async (hre, runSuper) => {
+      const interact = require("./scripts/interact");
+      await interact();
+      
+        
+    });
