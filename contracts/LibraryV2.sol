@@ -12,26 +12,27 @@ pragma solidity ^0.8.9;
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract Library is Ownable {
+contract LibraryV2 is Ownable {
     // To implement in logic   
-    // struct Book{
-    //     uint32 isbn;
-    //     uint8 stock;
-    //     bool added;
-    //     address[] history;
-    // }
+    struct Book{
+        uint isbn;
+        uint8 stock;
+        uint index;
+        bool added;
+        
+    }
 
-    // mapping(uint32=>Book) booksMapping;
-    // uint32[] booksIndex;
+    mapping(uint=>Book) booksMapping;
+    uint[] booksIndex;
 
 
 
-    mapping(uint32=>bool) bookAdded;
-    mapping(uint32=>uint8) stock;
+    //mapping(uint32=>bool) bookAdded;
+    //mapping(uint32=>uint8) stock;
     mapping(address=>uint32) hasBorrow;
-    mapping(uint32=>address[]) bookHistory;
-
-    uint32[] bookList;
+    mapping(uint=>address[]) bookHistory;
+    
+    uint[] bookList;
 
     uint fee = 1000000 gwei; 
 
@@ -45,23 +46,27 @@ contract Library is Ownable {
         _;
     }
 
-    function addBook(uint32 _isbn,uint8 _qty) external onlyOwner {
+    function addBook(uint _isbn,uint8 _qty) external onlyOwner {
         require(_qty>0,"Quantity must at least 1 unit.");
         
-        if(bookAdded[_isbn]==false){
-            bookAdded[_isbn] = true;
+        if(booksMapping[_isbn].added==false){
+            bookList.push(_isbn);
+            uint listLength = bookList.length - 1;
+            booksMapping[_isbn] = Book(_isbn,_qty,listLength,true);
+            bookList.push(_isbn);
         }
-        stock[_isbn] += _qty;
-        bookList.push(_isbn);
-        emit NewBook(_isbn,_qty);
-        
+        else{
+            booksMapping[_isbn].stock += _qty;
+        }
+
+        emit NewBook(_isbn,_qty);  
     }
 
     function borrow(uint32 _isbn) external payable noRent {
-        require(bookAdded[_isbn]== true,"Book not available.");
-        require(stock[_isbn]>0,"Not stock available.");
+        require(booksMapping[_isbn].added == true,"Book not available.");
+        require(booksMapping[_isbn].stock > 0,"Not stock available.");
         require(msg.value == fee,"Wrong transfer value, it should be 1 Finney.");
-        stock[_isbn] = stock[_isbn] - 1;
+        booksMapping[_isbn].stock--;
         hasBorrow[msg.sender] = _isbn;
         bookHistory[_isbn].push(msg.sender);
         emit BookBorrowed(_isbn,msg.sender);
@@ -70,16 +75,16 @@ contract Library is Ownable {
     function returnBook() external payable {
         require(hasBorrow[msg.sender]>0,"This address did not rent a book.");
         uint32 bookReturn = hasBorrow[msg.sender];
-        stock[bookReturn] = stock[bookReturn] + 1;
+        booksMapping[bookReturn].stock +=1;
         hasBorrow[msg.sender] = 0;
         emit BookReturned(bookReturn,msg.sender);
     }
 
-    function getAvailableBooks() external view returns(uint32[] memory) {
+    function getAvailableBooks() external view returns(uint[] memory) {
         return bookList;
     }
-    function getStock(uint32 _isbn) external view returns(uint){
-          return stock[_isbn];
+    function getStock(uint32 _isbn) external view returns(uint8){
+          return booksMapping[_isbn].stock ;
     }
 
     function getBookHistory(uint32 _isbn) external view returns(address[] memory) {
@@ -102,9 +107,9 @@ contract Library is Ownable {
         emit NewDepositReceive(msg.sender);
     }
 
-    event NewBook(uint32 _isbn, uint8 _qty);
-    event BookBorrowed(uint32 _isbn, address _address);
-    event BookReturned(uint32 _isbn, address _address);
+    event NewBook(uint _isbn, uint8 _qty);
+    event BookBorrowed(uint _isbn, address _address);
+    event BookReturned(uint _isbn, address _address);
     event NewDepositFallback(address _address);
     event NewDepositReceive(address _address);
 
