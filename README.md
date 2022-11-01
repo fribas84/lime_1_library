@@ -63,6 +63,4 @@ Create a script interacting with your library on your local node that:
 
 ### Task 2: Interact with the Library contract on Goerli
 
-
-
-- [ ] Create a copy of your script and perform the same interactions but on Goerli testnet.
+- [X] Create a copy of your script and perform the same interactions but on Goerli testnet.
