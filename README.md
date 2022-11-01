@@ -35,6 +35,8 @@ Contract is deployed in Goerli at [0x666379BfF98DA138Dd8E6677215074FDd0d0B084](h
 - [X] 100% test coverage
 - [X] Contract Verification
 
+Contract is deployed in Goerli at [0x6a7667E68A8A02Af2aCD543F384F4a99F36D8018](https://goerli.etherscan.io/address/0x6a7667E68A8A02Af2aCD543F384F4a99F36D8018)
+
 ## Week 2 tasks:
 - [X] Create HardHat Project.
 - [X] Use OpenZeppelin Ownable.
@@ -60,5 +62,7 @@ Create a script interacting with your library on your local node that:
 - [X] Checks the availability of the book
 
 ### Task 2: Interact with the Library contract on Goerli
+
+
 
 - [ ] Create a copy of your script and perform the same interactions but on Goerli testnet.

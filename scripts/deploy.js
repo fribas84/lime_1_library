@@ -15,7 +15,7 @@ async function deployLibraryContract() {
   console.log('Deploying contracts with the account:', deployer.address); // We are printing the address of the deployer
   console.log('Account balance:', (await deployer.getBalance()).toString()); // We are printing the account balance
 
-  const Library = await ethers.getContractFactory("Library"); // 
+  const Library = await ethers.getContractFactory("LibraryV2"); // 
   const libraryContract = await Library.deploy();
   console.log('Waiting for Library deployment...');
   await libraryContract.deployed();
