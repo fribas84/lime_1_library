@@ -40,33 +40,51 @@ const run = async () => {
     const rawAvailableBooks = await library.getAvailableBooks();
     console.log("\tRaw Available books: " + rawAvailableBooks);
     const readableAvailableBooks = rawAvailableBooks.map(book => parseToDec(book));
-    console.log("\tReadble Available books: " + readableAvailableBooks);
+    console.log("\tReadable Available books: " + readableAvailableBooks);
 
     console.log("\nBorrowing a book");
     let isbn = 9780062886149;
     let isbnHex = hre.ethers.utils.hexZeroPad(hre.ethers.utils.hexlify(isbn),6);
 
     const options = {value: hre.ethers.utils.parseEther("0.001")}
-    await library.borrow(isbnHex,options);
-    
+     
+    let txResponse = await library.borrow(isbnHex,options);;
+    let txReceipt = await txResponse.wait();
+    if(txReceipt.status == 1) { 
+        let [transferEvent] = txReceipt.events;
+        let [ idHex, addr ] = transferEvent.args;
+        console.log("\tWallet :" + addr + " borrowed " + parseToDec(idHex));
+    }
     let stock = await library.getStock(isbnHex);
-    let id = parseToDec(isbnHex);
-    console.log("Book with ISBN: " + id + " has stock: " + stock);
+    console.log("\tBook with ISBN: " + isbn + " has stock: " + stock);
     
-    const history = await library.getBookHistory(isbnHex);
+    let history = await library.getBookHistory(isbnHex);
     console.log("\tHistory: " + history);
 
-    let hasBorrowed = await library.hasBorrowed();
-    console.log("\tWallet borrowed :" + hasBorrowed +" | " + parseToDec(hasBorrowed));
+  
 
-    console.log(" \n Return Book");
-    await library.returnBook();
+    console.log("\nReturn Book");
+
     hasBorrowed = await library.hasBorrowed();
     console.log("\tWallet borrowed :" + hasBorrowed +" | " + parseToDec(hasBorrowed));
     stock = await library.getStock(isbnHex);
     id = parseToDec(isbnHex);
-    console.log("\tBook with ISBN: " + id + " has stock: " + stock);
+    console.log("\tStock before return of ISBN: " + id + " has stock: " + stock);
 
+
+    txResponse = await library.returnBook();
+    txReceipt = await txResponse.wait();
+    if(txReceipt.status == 1) { 
+        let [transferEvent] = txReceipt.events;
+        let [ idHex, addr ] = transferEvent.args;
+        console.log("\tWallet :" + addr + " Returned " + parseToDec(hasBorrowed));
+    }
+
+    stock = await library.getStock(isbnHex);
+    console.log("\tBook with ISBN: " + id + " has stock: " + stock);
+    
+    history = await library.getBookHistory(isbnHex);
+    console.log("\tHistory of ISBN " + isbn +": " + history);
     
 }
 
