@@ -12,7 +12,7 @@ This project is the delivery for Task 1 for Lime Academy Web 3 development cours
 - Everyone should be able to see the addresses of all people that have ever borrowed a given book.
 
 ## To do list
-
+### V1 
 - [X] Basic smart contract that fullfills requirements.
 - [X] Deployment unit tests
 - [X] Borrow unit tests
@@ -21,11 +21,19 @@ This project is the delivery for Task 1 for Lime Academy Web 3 development cours
 - [X] 100% test coverage
 - [X] Contract Verification
 
-Smart Contract optimization -- This could be always improved
-
-## Contract deployed
-
 Contract is deployed in Goerli at [0x666379BfF98DA138Dd8E6677215074FDd0d0B084](https://goerli.etherscan.io/address/0x666379BfF98DA138Dd8E6677215074FDd0d0B084)
+
+### V2
+- Improved Data Structure
+- Now instead of storing a String for the book, uses a bytes6, so is needed to add a hex represantion of an ISBN.
+
+- [X] Basic smart contract that fullfills requirements.
+- [X] Deployment unit tests
+- [X] Borrow unit tests
+- [X] Return unit tests
+- [X] History tests
+- [X] 100% test coverage
+- [X] Contract Verification
 
 ## Week 2 tasks:
 - [X] Create HardHat Project.
