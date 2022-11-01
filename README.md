@@ -53,11 +53,11 @@ Contract is deployed in Goerli at [0x666379BfF98DA138Dd8E6677215074FDd0d0B084](h
 Create a script interacting with your library on your local node that:
 
 - [X] Creates a book
-- [ ] Checks all available books
-- [ ] Rents a book
-- [ ] Checks that it is rented
-- [ ] Returns the book
-- [ ] Checks the availability of the book
+- [X] Checks all available books
+- [X] Rents a book
+- [X] Checks that it is rented
+- [X] Returns the book
+- [X] Checks the availability of the book
 
 ### Task 2: Interact with the Library contract on Goerli
 
